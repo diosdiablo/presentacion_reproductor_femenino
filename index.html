@@ -18,11 +18,11 @@ body {
 }
 h1, h2, h3, .logo, .badge { font-family: 'Sora', 'Inter', sans-serif; }
 
-.slide { height: 100vh; width: 100%; display: none; flex-direction: column; padding: 4.5rem 4rem 4.5rem; position: relative; overflow-y: auto; background: #f4f8fb; }
+.slide { height: 100vh; width: 100%; display: none; flex-direction: column; padding: 3.6rem 3.5rem 3.6rem; position: relative; overflow: hidden; background: #f4f8fb; }
 .slide.active { display: flex; }
 .slide-content { margin: auto 0; max-width: 1200px; margin-left: auto; margin-right: auto; width: 100%; position: relative; z-index: 1; }
 
-.sketchfab-embed { position: relative; width: 100%; aspect-ratio: 1; max-height: 76vh; border-radius: 18px; overflow: hidden; background: #ffffff; border: 1px solid rgba(0,109,119,0.14); box-shadow: 0 18px 50px -20px rgba(0,109,119,0.28); }
+.sketchfab-embed { position: relative; width: 100%; aspect-ratio: 1; max-height: 60vh; border-radius: 18px; overflow: hidden; background: #ffffff; border: 1px solid rgba(0,109,119,0.14); box-shadow: 0 18px 50px -20px rgba(0,109,119,0.28); }
 .sketchfab-embed iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 
 nav {
@@ -169,7 +169,7 @@ nav .page-counter { font-size: 0.8rem; color: rgba(23,52,62,0.4); font-weight: 6
     Sistema Reproductor Femenino
   </div>
   <div class="progress" id="navProgress"></div>
-  <div class="page-counter" id="pageCounter">1 / 15</div>
+  <div class="page-counter" id="pageCounter">1 / 14</div>
 </nav>
 
 <!-- ===== 1. PORTADA ===== -->
@@ -563,6 +563,26 @@ nav .page-counter { font-size: 0.8rem; color: rgba(23,52,62,0.4); font-weight: 6
     dots.push(dot);
   });
 
+  var nav = document.querySelector('nav');
+  var slideNav = document.getElementById('slideNav');
+
+  function fitSlide() {
+    var slide = sections[current];
+    var content = slide.querySelector('.slide-content');
+    if (!content) return;
+    content.style.transform = 'none';
+    content.style.transformOrigin = 'center center';
+    var availH = window.innerHeight - nav.offsetHeight - slideNav.offsetHeight;
+    var padTop = parseFloat(getComputedStyle(slide).paddingTop) || 0;
+    var padBottom = parseFloat(getComputedStyle(slide).paddingBottom) || 0;
+    availH -= (padTop + padBottom);
+    var rect = content.getBoundingClientRect();
+    var scale = Math.min(availH / rect.height, window.innerWidth / rect.width, 1);
+    if (scale < 1) {
+      content.style.transform = 'scale(' + scale + ')';
+    }
+  }
+
   function revealElements() {
     sections[current].querySelectorAll('.card, .organ-card, .glossary-item').forEach(function(el, i) {
       el.style.opacity = '0';
@@ -588,6 +608,7 @@ nav .page-counter { font-size: 0.8rem; color: rgba(23,52,62,0.4); font-weight: 6
     nextBtn.disabled = current === total - 1;
     revealElements();
     sections[current].scrollTop = 0;
+    fitSlide();
   }
 
   function nextSlide() { goTo(current + 1); }
@@ -599,6 +620,17 @@ nav .page-counter { font-size: 0.8rem; color: rgba(23,52,62,0.4); font-weight: 6
     if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); nextSlide(); }
     if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); prevSlide(); }
   });
+
+  var resizeTimer;
+  window.addEventListener('resize', function() {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(fitSlide, 120);
+  });
+
+  document.addEventListener('DOMContentLoaded', function() { fitSlide(); });
+  window.addEventListener('load', function() { fitSlide(); });
+  if (document.fonts && document.fonts.ready) { document.fonts.ready.then(fitSlide); }
+  setTimeout(fitSlide, 400);
 
   sections[0].classList.add('active');
   revealElements();
